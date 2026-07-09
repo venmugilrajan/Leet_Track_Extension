@@ -33,26 +33,29 @@ async function refreshUI() {
   const settings = await getSettings();
   const history = await getHistory();
 
-  // Apply theme
-  document.documentElement.setAttribute('data-theme', settings.theme || 'dark');
-
   // 1. Update GitHub Connection Status
   const githubStatus = document.getElementById('github-status');
   if (settings.githubToken && settings.githubRepo) {
-    githubStatus.className = 'status-box connected';
+    githubStatus.className = 'status-container connected';
     githubStatus.innerHTML = `
-      <span class="material-icons status-icon">cloud_done</span>
+      <div class="status-icon-wrapper">
+        <span class="material-icons">cloud_done</span>
+      </div>
       <div class="status-info">
         <div class="status-title">Synced to GitHub</div>
         <div class="status-desc">${settings.githubRepo}</div>
       </div>
     `;
+    githubStatus.style.cursor = 'default';
+    githubStatus.onclick = null;
   } else {
-    githubStatus.className = 'status-box';
+    githubStatus.className = 'status-container';
     githubStatus.innerHTML = `
-      <span class="material-icons status-icon">cloud_off</span>
+      <div class="status-icon-wrapper">
+        <span class="material-icons">cloud_off</span>
+      </div>
       <div class="status-info">
-        <div class="status-title">GitHub Not Connected</div>
+        <div class="status-title">GitHub Disconnected</div>
         <div class="status-desc">Click to open settings and configure.</div>
       </div>
     `;
