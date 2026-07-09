@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetTrack Pro - Control Center</title>
+  <link rel="stylesheet" href="../assets/style/material-icons.css">
+  <link rel="stylesheet" href="../assets/style/common.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <script src="chart.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar glass-card">
+      <div class="sidebar-header">
+        <span class="material-icons logo-icon">auto_awesome_motion</span>
+        <h2>LeetTrack <span class="accent-text">Pro</span></h2>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="tab-overview">
+          <span class="material-icons">analytics</span> Overview
+        </button>
+        <button class="nav-item" data-tab="tab-submissions">
+          <span class="material-icons">list_alt</span> Submissions
+        </button>
+        <button class="nav-item" data-tab="tab-contest">
+          <span class="material-icons">emoji_events</span> Contest Tracker
+        </button>
+        <button class="nav-item" data-tab="tab-settings">
+          <span class="material-icons">settings</span> Settings
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="github-connected-badge" id="sidebar-github-badge">
+          <span class="material-icons text-muted">cloud_off</span>
+          <span>Disconnected</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top header bar -->
+      <header class="top-bar glass-card">
+        <div class="user-greeting">
+          <h1 id="page-title">Analytics Overview</h1>
+          <p id="page-subtitle" class="text-secondary">Track your programming growth and portfolio syncing status.</p>
+        </div>
+        <div class="quick-actions">
+          <button id="global-sync-btn" class="sync-action-btn glass-card">
+            <span class="material-icons">sync</span> Sync Repository
+          </button>
+          <div class="theme-toggle-container">
+            <button id="theme-toggle" class="icon-btn">
+              <span class="material-icons" id="theme-icon">light_mode</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- TAB CONTENT: OVERVIEW -->
+      <section id="tab-overview" class="tab-pane active animated">
+        <!-- Quick Stats Widgets -->
+        <div class="stats-row">
+          <div class="stat-card glass-card">
+            <div class="stat-card-header">
+              <span class="text-secondary font-title">Total Solved</span>
+              <span class="material-icons icon-purple">check_circle</span>
+            </div>
+            <div class="stat-value" id="over-total">0</div>
+            <div class="stat-progress-bar">
+              <div class="progress-fill fill-purple" id="over-progress-pct" style="width: 0%"></div>
+            </div>
+          </div>
+          
+          <div class="stat-card glass-card">
+            <div class="stat-card-header">
+              <span class="text-secondary font-title">Current Streak</span>
+              <span class="material-icons icon-orange">local_fire_department</span>
+            </div>
+            <div class="stat-value" id="over-cstreak">0 <span class="days-lbl">Days</span></div>
+            <div class="stat-footer-text">Keep solving daily to maintain it!</div>
+          </div>
+
+          <div class="stat-card glass-card">
+            <div class="stat-card-header">
+              <span class="text-secondary font-title">Longest Streak</span>
+              <span class="material-icons icon-gold">emoji_events</span>
+            </div>
+            <div class="stat-value" id="over-lstreak">0 <span class="days-lbl">Days</span></div>
+            <div class="stat-footer-text">Your absolute record.</div>
+          </div>
+
+          <div class="stat-card glass-card">
+            <div class="stat-card-header">
+              <span class="text-secondary font-title">GitHub Sync</span>
+              <span class="material-icons icon-blue">cloud_done</span>
+            </div>
+            <div class="stat-value" id="over-sync-ratio">0%</div>
+            <div class="stat-footer-text" id="over-sync-count">0 of 0 committed</div>
+          </div>
+        </div>
+
+        <!-- Heatmap Section -->
+        <div class="heatmap-section glass-card">
+          <h3 class="font-title section-title">Submission Heatmap</h3>
+          <div class="heatmap-container" id="heatmap-grid">
+            <!-- Heatmap boxes generated via JS -->
+          </div>
+          <div class="heatmap-legend">
+            <span>Less</span>
+            <div class="legend-box lvl-0"></div>
+            <div class="legend-box lvl-1"></div>
+            <div class="legend-box lvl-2"></div>
+            <div class="legend-box lvl-3"></div>
+            <div class="legend-box lvl-4"></div>
+            <span>More</span>
+          </div>
+        </div>
+
+        <!-- Charts Layout Grid -->
+        <div class="charts-grid">
+          <div class="chart-card glass-card">
+            <h4 class="font-title">Difficulty Breakdown</h4>
+            <div class="chart-wrapper">
+              <canvas id="chart-difficulty"></canvas>
+            </div>
+          </div>
+          <div class="chart-card glass-card">
+            <h4 class="font-title">Top Languages</h4>
+            <div class="chart-wrapper">
+              <canvas id="chart-languages"></canvas>
+            </div>
+          </div>
+          <div class="chart-card glass-card">
+            <h4 class="font-title">Tag Analytics (Completion)</h4>
+            <div class="tag-completion-list" id="tag-completion-list">
+              <!-- Dynamically populated tags with progress bars -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB CONTENT: SUBMISSIONS -->
+      <section id="tab-submissions" class="tab-pane animated">
+        <div class="submissions-layout glass-card">
+          <!-- Filters & Search Toolbar -->
+          <div class="toolbar">
+            <div class="search-input-wrapper">
+              <span class="material-icons">search</span>
+              <input type="text" id="search-bar" placeholder="Search by name, number, tag, language...">
+            </div>
+            <div class="filters-row">
+              <select id="filter-difficulty" class="glass-select">
+                <option value="All">All Difficulties</option>
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Hard">Hard</option>
+              </select>
+              <select id="filter-tag" class="glass-select">
+                <option value="All">All Topics</option>
+                <!-- Filled via JS -->
+              </select>
+              <select id="filter-time" class="glass-select">
+                <option value="All">All Time</option>
+                <option value="Week">This Week</option>
+                <option value="Month">This Month</option>
+                <option value="Year">This Year</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Submissions Table -->
+          <div class="table-container">
+            <table class="submissions-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Problem Title</th>
+                  <th>Difficulty</th>
+                  <th>Language</th>
+                  <th>Runtime / Memory</th>
+                  <th>Solved Date</th>
+                  <th>Sync</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="submissions-table-body">
+                <!-- Dynamically generated rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB CONTENT: CONTEST TRACKER -->
+      <section id="tab-contest" class="tab-pane animated">
+        <div class="contest-layout glass-card">
+          <div class="contest-header-setup">
+            <h3 class="font-title">Contest Statistics</h3>
+            <p class="text-secondary">Enter your LeetCode username to load your rating progression and statistics.</p>
+            <div class="username-fetch-row">
+              <input type="text" id="lc-username-input" class="glass-input" placeholder="LeetCode Username">
+              <button id="fetch-contest-btn" class="primary-btn">
+                <span class="material-icons">cloud_download</span> Load Contest Data
+              </button>
+            </div>
+          </div>
+
+          <!-- Contest stats cards (visible only after fetching) -->
+          <div id="contest-stats-container" class="contest-stats-grid" style="display: none;">
+            <div class="stat-card glass-card">
+              <span class="text-secondary">Contest Rating</span>
+              <div class="stat-value" id="contest-rating">0</div>
+              <div class="stat-footer-text" id="contest-highest">Highest: 0</div>
+            </div>
+            <div class="stat-card glass-card">
+              <span class="text-secondary">Global Rank</span>
+              <div class="stat-value" id="contest-global-rank">0</div>
+              <div class="stat-footer-text" id="contest-percentile">Top: 0%</div>
+            </div>
+            <div class="stat-card glass-card">
+              <span class="text-secondary">Contests Attended</span>
+              <div class="stat-value" id="contest-attended">0</div>
+              <div class="stat-footer-text" id="contest-questions">Questions Solved: 0</div>
+            </div>
+          </div>
+
+          <div class="chart-card glass-card" id="contest-chart-card" style="display: none;">
+            <h4 class="font-title">Rating Trend</h4>
+            <div class="chart-wrapper">
+              <canvas id="chart-contest-rating"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB CONTENT: SETTINGS -->
+      <section id="tab-settings" class="tab-pane animated">
+        <div class="settings-grid">
+          <!-- GitHub Connection -->
+          <div class="settings-card glass-card">
+            <h3 class="font-title"><span class="material-icons">cloud</span> GitHub Authentication</h3>
+            
+            <div class="setting-item">
+              <label for="settings-token">Personal Access Token (PAT) / Token</label>
+              <input type="password" id="settings-token" class="glass-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+              <p class="input-tip">Ensure your token has <code>repo</code> access permissions.</p>
+            </div>
+            
+            <div class="setting-item">
+              <button id="verify-token-btn" class="primary-btn">Verify & Load Repositories</button>
+            </div>
+
+            <div id="repo-select-container" class="setting-item" style="display: none;">
+              <label for="settings-repo">Select Repository</label>
+              <div class="select-new-repo-row">
+                <select id="settings-repo" class="glass-select"></select>
+                <button id="create-repo-btn" class="glass-action-btn">
+                  <span class="material-icons">add</span> Create New Repo
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Configuration options -->
+          <div class="settings-card glass-card">
+            <h3 class="font-title"><span class="material-icons">build</span> Preferences</h3>
+            
+            <div class="setting-item">
+              <label for="settings-folder">Sync Folder Name</label>
+              <input type="text" id="settings-folder" class="glass-input" placeholder="LeetCode">
+            </div>
+
+            <div class="setting-item">
+              <label for="settings-folder-structure">Folder Naming Structure</label>
+              <select id="settings-folder-structure" class="glass-select">
+                <option value="Difficulty">By Difficulty (Easy/Medium/Hard)</option>
+                <option value="Flat">Flat (All files in sync folder)</option>
+              </select>
+            </div>
+
+            <div class="setting-item">
+              <label for="settings-commit-format">Commit Message Format</label>
+              <input type="text" id="settings-commit-format" class="glass-input" placeholder="Solved {id} - {title}">
+              <p class="input-tip">Use placeholders <code>{id}</code> and <code>{title}</code>.</p>
+            </div>
+
+            <div class="setting-toggles">
+              <div class="toggle-item">
+                <div class="toggle-info">
+                  <span class="toggle-title">Auto Sync</span>
+                  <span class="text-secondary toggle-desc">Sync solutions automatically upon LeetCode save.</span>
+                </div>
+                <input type="checkbox" id="settings-auto-sync" class="glass-checkbox">
+              </div>
+              <div class="toggle-item">
+                <div class="toggle-info">
+                  <span class="toggle-title">Auto Push</span>
+                  <span class="text-secondary toggle-desc">Directly push code to GitHub repository.</span>
+                </div>
+                <input type="checkbox" id="settings-auto-push" class="glass-checkbox">
+              </div>
+            </div>
+          </div>
+
+          <!-- Database Export / Import -->
+          <div class="settings-card glass-card span-2">
+            <h3 class="font-title"><span class="material-icons">storage</span> Data Management</h3>
+            <div class="data-actions-row">
+              <button id="export-json" class="glass-action-btn">
+                <span class="material-icons">download</span> Export JSON
+              </button>
+              <button id="export-csv" class="glass-action-btn">
+                <span class="material-icons">grid_on</span> Export CSV
+              </button>
+              <button id="export-markdown" class="glass-action-btn">
+                <span class="material-icons">code</span> Export Markdown Portfolio
+              </button>
+              <button id="clear-db-btn" class="danger-btn">
+                <span class="material-icons">delete_forever</span> Reset Local Database
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- NOTES / DETAIL MODAL -->
+  <div class="modal-backdrop" id="notes-modal" style="display: none;">
+    <div class="modal-content glass-card">
+      <header class="modal-header">
+        <h3 id="modal-title" class="font-title">Problem Notes</h3>
+        <button id="close-modal" class="icon-btn">
+          <span class="material-icons">close</span>
+        </button>
+      </header>
+      <div class="modal-body-split">
+        <!-- Left Side: Problem Info -->
+        <div class="modal-split-left">
+          <div class="split-section-header">
+            <span class="material-icons">description</span>
+            <h4>Problem Description</h4>
+          </div>
+          <pre id="note-description-preview" class="glass-preview-box description-box"></pre>
+
+          <div class="split-section-header mt-16">
+            <span class="material-icons">terminal</span>
+            <h4>Sample Test Case</h4>
+          </div>
+          <pre id="note-testcase-preview" class="glass-preview-box testcase-box"></pre>
+        </div>
+
+        <!-- Right Side: User Notes & Code -->
+        <div class="modal-split-right">
+          <div class="notes-meta-row">
+            <div class="meta-field">
+              <label>Time Complexity</label>
+              <input type="text" id="note-time" class="glass-input" placeholder="e.g. O(N log N)">
+            </div>
+            <div class="meta-field">
+              <label>Space Complexity</label>
+              <input type="text" id="note-space" class="glass-input" placeholder="e.g. O(N)">
+            </div>
+            <div class="meta-field-checkbox">
+              <input type="checkbox" id="note-revision" class="glass-checkbox">
+              <label for="note-revision">Needs Revision</label>
+            </div>
+          </div>
+          
+          <div class="notes-text-area">
+            <label>Approach / Thought Process</label>
+            <textarea id="note-approach" class="glass-textarea" rows="3" placeholder="Describe your algorithm..."></textarea>
+          </div>
+
+          <div class="notes-text-area">
+            <label>Common Mistakes / Pitfalls</label>
+            <textarea id="note-mistakes" class="glass-textarea" rows="2" placeholder="What should you avoid next time?"></textarea>
+          </div>
+
+          <div class="notes-text-area">
+            <label>Optimizations</label>
+            <textarea id="note-optimizations" class="glass-textarea" rows="2" placeholder="Any further optimizations possible?"></textarea>
+          </div>
+
+          <div class="code-preview-section">
+            <label>Submitted Code</label>
+            <pre><code id="note-code-preview"></code></pre>
+          </div>
+        </div>
+      </div>
+      <footer class="modal-footer">
+        <button id="save-notes-btn" class="primary-btn">Save Changes</button>
+      </footer>
+    </div>
+  </div>
+
+  <script type="module" src="dashboard.js"></script>
+</body>
+</html>

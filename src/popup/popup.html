@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetTrack Pro</title>
+  <link rel="stylesheet" href="../assets/style/material-icons.css">
+  <link rel="stylesheet" href="../assets/style/common.css">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body class="popup-body">
+  <div class="glass-card popup-card animated">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo-container">
+        <span class="material-icons logo-icon">auto_awesome_motion</span>
+        <h1>LeetTrack <span class="accent-text">Pro</span></h1>
+      </div>
+      <button id="open-dashboard" class="icon-btn" title="Open Full Dashboard">
+        <span class="material-icons">dashboard</span>
+      </button>
+    </header>
+
+    <!-- GitHub Connection Status -->
+    <div class="status-box" id="github-status">
+      <span class="material-icons status-icon">cloud_off</span>
+      <div class="status-info">
+        <div class="status-title">GitHub Not Connected</div>
+        <div class="status-desc">Connect in dashboard settings to sync.</div>
+      </div>
+    </div>
+
+    <!-- Quick Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-item solved">
+        <div class="stat-num" id="stat-total">0</div>
+        <div class="stat-lbl">Solved</div>
+      </div>
+      <div class="stat-item streak">
+        <div class="stat-num" id="stat-streak">🔥 0</div>
+        <div class="stat-lbl">Streak</div>
+      </div>
+    </div>
+
+    <div class="difficulty-bar">
+      <div class="diff-seg easy" id="bar-easy" style="width: 0%" title="Easy"></div>
+      <div class="diff-seg medium" id="bar-medium" style="width: 0%" title="Medium"></div>
+      <div class="diff-seg hard" id="bar-hard" style="width: 0%" title="Hard"></div>
+    </div>
+
+    <!-- Unsynced Alerts -->
+    <div class="sync-actions" id="sync-container" style="display: none;">
+      <p id="unsynced-text">You have 0 uncommitted solutions.</p>
+      <button id="sync-now" class="primary-btn">
+        <span class="material-icons">sync</span> Sync Now
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div id="latest-problem-box">
+        <span class="text-muted">Last Solved:</span>
+        <span id="last-solved-title" class="val">-</span>
+      </div>
+    </footer>
+  </div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

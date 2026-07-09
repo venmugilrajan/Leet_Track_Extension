@@ -1,0 +1,221 @@
+.popup-body {
+  width: 360px;
+  height: auto;
+  padding: 10px;
+  background-color: var(--bg-app);
+}
+
+.popup-card {
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-icon {
+  font-size: 24px;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.header h1 {
+  font-family: var(--font-title);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.accent-text {
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-smooth);
+}
+
+.icon-btn:hover {
+  background: var(--glass-bg-hover);
+  color: var(--text-primary);
+}
+
+/* Status Box */
+.status-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+}
+
+.status-box.connected {
+  border-color: rgba(0, 242, 254, 0.25);
+  background: rgba(0, 242, 254, 0.02);
+}
+
+.status-icon {
+  font-size: 24px;
+  color: var(--text-muted);
+}
+
+.status-box.connected .status-icon {
+  color: #00f2fe;
+}
+
+.status-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.status-title {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.status-desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.stat-item {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.stat-num {
+  font-family: var(--font-title);
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.stat-lbl {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Difficulty Bar */
+.difficulty-bar {
+  display: flex;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 4px 0;
+}
+
+.diff-seg {
+  height: 100%;
+  transition: width 0.5s ease-in-out;
+}
+
+.diff-seg.easy { background-color: var(--difficulty-easy); }
+.diff-seg.medium { background-color: var(--difficulty-medium); }
+.diff-seg.hard { background-color: var(--difficulty-hard); }
+
+/* Sync Container */
+.sync-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 82, 0, 0.05);
+  border: 1px dashed rgba(255, 82, 0, 0.25);
+  text-align: center;
+}
+
+.sync-actions p {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.primary-btn {
+  background: var(--primary-gradient);
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: var(--transition-smooth);
+}
+
+.primary-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 82, 0, 0.3);
+}
+
+.primary-btn:active {
+  transform: translateY(0);
+}
+
+/* Footer styling */
+.footer {
+  border-top: 1px solid var(--glass-border);
+  padding-top: 12px;
+  font-size: 11px;
+  display: flex;
+  justify-content: space-between;
+}
+
+#latest-problem-box {
+  display: flex;
+  gap: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+#last-solved-title {
+  font-weight: 600;
+  color: var(--accent-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
