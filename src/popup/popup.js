@@ -33,6 +33,9 @@ async function refreshUI() {
   const settings = await getSettings();
   const history = await getHistory();
 
+  // Apply theme
+  document.documentElement.setAttribute('data-theme', settings.theme || 'dark');
+
   // 1. Update GitHub Connection Status
   const githubStatus = document.getElementById('github-status');
   if (settings.githubToken && settings.githubRepo) {
