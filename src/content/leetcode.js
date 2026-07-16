@@ -310,11 +310,20 @@ function hideZenTextNode(node, settings) {
       container.style.setProperty('pointer-events', 'none', 'important');
       container.setAttribute('data-zen-hidden', 'true');
     }
-    // 3. Problem set list percentage match (e.g. "73.6%")
-    if (/^\d+(\.\d+)?%$/.test(text)) {
-      parent.style.setProperty('opacity', '0', 'important');
-      parent.style.setProperty('pointer-events', 'none', 'important');
-      parent.setAttribute('data-zen-hidden', 'true');
+    // 3. Problem set list percentage match (e.g. "73.6%" or split structures containing "%")
+    if (text.includes('%')) {
+      let container = parent;
+      for (let i = 0; i < 3; i++) {
+        if (!container) break;
+        const cellText = (container.innerText || '').replace(/\s/g, '').replace(/\u00a0/g, '');
+        if (/^\d+(\.\d+)?%$/.test(cellText)) {
+          container.style.setProperty('opacity', '0', 'important');
+          container.style.setProperty('pointer-events', 'none', 'important');
+          container.setAttribute('data-zen-hidden', 'true');
+          break;
+        }
+        container = container.parentElement;
+      }
     }
   }
 }
