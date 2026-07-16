@@ -334,6 +334,28 @@ chrome.storage.onChanged.addListener((changes, area) => {
   }
 });
 
+// Efficient check for "Accepted" banner/status in added nodes
+function containsAccepted(mutation) {
+  if (mutation.type === 'childList') {
+    for (const node of mutation.addedNodes) {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        if (node.textContent && node.textContent.includes("Accepted")) {
+          return true;
+        }
+      } else if (node.nodeType === Node.TEXT_NODE) {
+        if (node.nodeValue && node.nodeValue.includes("Accepted")) {
+          return true;
+        }
+      }
+    }
+  } else if (mutation.type === 'characterData') {
+    if (mutation.target.nodeValue && mutation.target.nodeValue.includes("Accepted")) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Observe the DOM to check for submission results
 function setupObserver() {
   console.log("[LeetTrack Pro] Injecting Mutation Observer...");
@@ -346,37 +368,38 @@ function setupObserver() {
     const hasActiveZen = currentZenSettings.hideEasy || currentZenSettings.hideMedium || currentZenSettings.hideHard || currentZenSettings.hideAcceptance;
 
     for (const mutation of mutations) {
-      if (mutation.type === 'childList') {
+      const isChildList = mutation.type === 'childList';
+      const isCharData = mutation.type === 'characterData';
+
+      if (isChildList && hasActiveZen) {
         // Optimize: Only walk newly added subtrees to prevent performance lag
-        if (hasActiveZen) {
-          mutation.addedNodes.forEach(node => {
-            if (node.nodeType === Node.ELEMENT_NODE) {
-              hideZenTextInSubtree(node, currentZenSettings);
-            } else if (node.nodeType === Node.TEXT_NODE) {
-              hideZenTextNode(node, currentZenSettings);
+        mutation.addedNodes.forEach(node => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            hideZenTextInSubtree(node, currentZenSettings);
+          } else if (node.nodeType === Node.TEXT_NODE) {
+            hideZenTextNode(node, currentZenSettings);
+          }
+        });
+      } else if (isCharData && hasActiveZen) {
+        hideZenTextNode(mutation.target, currentZenSettings);
+      }
+
+      // Fast check for "Accepted" submission result without reading document.body.innerHTML
+      if (containsAccepted(mutation)) {
+        const slug = getProblemSlug();
+        if (slug) {
+          fetchLatestSubmissions(slug).then(submissions => {
+            const latest = submissions[0];
+            if (latest && latest.statusDisplay === 'Accepted') {
+              const ageSeconds = (Date.now() / 1000) - latest.timestamp;
+              if (ageSeconds < 60) {
+                processSubmission(latest.id);
+              }
             }
+          }).catch(err => {
+            console.error("[LeetTrack Pro] Submissions check failed:", err);
           });
         }
-
-        const element = document.body;
-        if (element.innerHTML.includes("Accepted")) {
-          const slug = getProblemSlug();
-          if (slug) {
-            fetchLatestSubmissions(slug).then(submissions => {
-              const latest = submissions[0];
-              if (latest && latest.statusDisplay === 'Accepted') {
-                const ageSeconds = (Date.now() / 1000) - latest.timestamp;
-                if (ageSeconds < 60) {
-                  processSubmission(latest.id);
-                }
-              }
-            }).catch(err => {
-              console.error("[LeetTrack Pro] Submissions check failed:", err);
-            });
-          }
-        }
-      } else if (mutation.type === 'characterData' && hasActiveZen) {
-        hideZenTextNode(mutation.target, currentZenSettings);
       }
     }
   });
