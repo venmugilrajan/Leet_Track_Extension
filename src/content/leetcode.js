@@ -191,29 +191,167 @@ async function processSubmission(submissionId) {
   }
 }
 
+// Retrieve settings directly in content script
+function getContentSettings() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(['settings'], (result) => {
+      resolve(result.settings || {});
+    });
+  });
+}
+
+// Function to apply the Zen Mode visibility styles and DOM manipulation
+let currentZenSettings = {};
+
+function applyZenMode(settings) {
+  currentZenSettings = settings;
+
+  // 1. Manage stylesheet injection
+  let styleEl = document.getElementById('leettrack-zen-styles');
+  if (!styleEl) {
+    styleEl = document.createElement('style');
+    styleEl.id = 'leettrack-zen-styles';
+    document.head.appendChild(styleEl);
+  }
+
+  let css = '';
+  if (settings.hideEasy) {
+    css += `
+      .text-easy-s, [class*="text-green-s"], [class*="text-lc-green"], [class*="bg-lc-green"], [class*="text-emerald"], [class*="bg-emerald"] {
+        opacity: 0 !important;
+        pointer-events: none !important;
+      }
+    `;
+  }
+  if (settings.hideMedium) {
+    css += `
+      .text-medium-s, [class*="text-medium"], [class*="text-orange-s"], [class*="text-lc-orange"], [class*="bg-lc-orange"], [class*="text-yellow-s"], [class*="text-lc-yellow"], [class*="bg-lc-yellow"], [class*="text-amber"], [class*="bg-amber"] {
+        opacity: 0 !important;
+        pointer-events: none !important;
+      }
+    `;
+  }
+  if (settings.hideHard) {
+    css += `
+      .text-hard-s, [class*="text-red-s"], [class*="text-lc-red"], [class*="bg-lc-red"], [class*="text-pink"], [class*="bg-pink"] {
+        opacity: 0 !important;
+        pointer-events: none !important;
+      }
+    `;
+  }
+  styleEl.textContent = css;
+
+  // 2. Perform DOM Walk to clean up any remaining text nodes
+  updateDOMTextVisibility(settings);
+}
+
+function updateDOMTextVisibility(settings) {
+  if (!settings.hideEasy && !settings.hideMedium && !settings.hideHard && !settings.hideAcceptance) {
+    document.querySelectorAll('[data-zen-hidden]').forEach(el => {
+      el.style.opacity = '';
+      el.style.pointerEvents = '';
+      el.removeAttribute('data-zen-hidden');
+    });
+    return;
+  }
+
+  const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+  let node;
+  while (node = walk.nextNode()) {
+    const parent = node.parentElement;
+    if (!parent) continue;
+
+    const tag = parent.tagName.toLowerCase();
+    if (tag === 'script' || tag === 'style' || tag === 'noscript') continue;
+
+    const text = node.nodeValue.trim();
+    if (!text) continue;
+
+    // Easy match
+    if (settings.hideEasy && text === 'Easy') {
+      parent.style.setProperty('opacity', '0', 'important');
+      parent.style.setProperty('pointer-events', 'none', 'important');
+      parent.setAttribute('data-zen-hidden', 'true');
+    }
+
+    // Medium match
+    if (settings.hideMedium && (text === 'Medium' || text === 'Med.' || text === 'Med')) {
+      parent.style.setProperty('opacity', '0', 'important');
+      parent.style.setProperty('pointer-events', 'none', 'important');
+      parent.setAttribute('data-zen-hidden', 'true');
+    }
+
+    // Hard match
+    if (settings.hideHard && text === 'Hard') {
+      parent.style.setProperty('opacity', '0', 'important');
+      parent.style.setProperty('pointer-events', 'none', 'important');
+      parent.setAttribute('data-zen-hidden', 'true');
+    }
+
+    // Acceptance match
+    if (settings.hideAcceptance) {
+      // 1. Hide "Acceptance" header exactly
+      if (text === 'Acceptance') {
+        parent.style.setProperty('opacity', '0', 'important');
+        parent.style.setProperty('pointer-events', 'none', 'important');
+        parent.setAttribute('data-zen-hidden', 'true');
+      }
+      // 2. Hide acceptance stat block by checking if text matches Accepted/Acceptance Rate
+      if (text.includes('Accepted') || text.includes('Acceptance Rate')) {
+        let container = parent;
+        for (let i = 0; i < 5; i++) {
+          if (!container || !container.parentElement) break;
+          const parentText = container.parentElement.innerText || '';
+          if (parentText.includes('Accepted') && parentText.includes('Acceptance Rate')) {
+            container = container.parentElement;
+            break;
+          }
+          container = container.parentElement;
+        }
+        container.style.setProperty('opacity', '0', 'important');
+        container.style.setProperty('pointer-events', 'none', 'important');
+        container.setAttribute('data-zen-hidden', 'true');
+      }
+      // 3. Problem set list percentage match (e.g. "73.6%")
+      if (/^\d+(\.\d+)?%$/.test(text)) {
+        parent.style.setProperty('opacity', '0', 'important');
+        parent.style.setProperty('pointer-events', 'none', 'important');
+        parent.setAttribute('data-zen-hidden', 'true');
+      }
+    }
+  }
+}
+
+// Listen for settings changes to apply updates in real time
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'local' && changes.settings) {
+    applyZenMode(changes.settings.newValue || {});
+  }
+});
+
 // Observe the DOM to check for submission results
 function setupObserver() {
   console.log("[LeetTrack Pro] Injecting Mutation Observer...");
+
+  getContentSettings().then(settings => {
+    applyZenMode(settings);
+  });
   
   const observer = new MutationObserver((mutations) => {
+    if (currentZenSettings) {
+      updateDOMTextVisibility(currentZenSettings);
+    }
+
     for (const mutation of mutations) {
       if (mutation.type === 'childList' || mutation.type === 'characterData') {
-        // Look for the "Accepted" text in the submission panel
         const element = document.body;
-        
-        // Match standard LeetCode "Accepted" states
-        // In the new UI, it shows "Accepted" on success. We can search for elements containing this.
         if (element.innerHTML.includes("Accepted")) {
-          // Verify it's an actual solved event. 
-          // Let's query the LeetCode submissions list to grab the latest submission and see if it's accepted.
-          // This avoids false positives and gives us the exact ID immediately!
           const slug = getProblemSlug();
           if (slug) {
             fetchLatestSubmissions(slug).then(submissions => {
               const latest = submissions[0];
               if (latest && latest.statusDisplay === 'Accepted') {
                 const ageSeconds = (Date.now() / 1000) - latest.timestamp;
-                // If the submission is less than 60 seconds old, it's our new submission!
                 if (ageSeconds < 60) {
                   processSubmission(latest.id);
                 }
@@ -239,3 +377,4 @@ if (document.readyState === 'loading') {
 } else {
   setupObserver();
 }
+

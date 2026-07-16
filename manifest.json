@@ -20,7 +20,8 @@
   "content_scripts": [
     {
       "matches": [
-        "https://leetcode.com/problems/*"
+        "https://leetcode.com/problems/*",
+        "https://leetcode.com/problemset/*"
       ],
       "js": [
         "src/content/leetcode.js"

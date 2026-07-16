@@ -1,4 +1,4 @@
-import { getSettings, getHistory } from '../storage/storage.js';
+import { getSettings, getHistory, saveSettings } from '../storage/storage.js';
 import { calculateStreaks, padProblemId } from '../utils/utils.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -7,6 +7,31 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Open full dashboard
   document.getElementById('open-dashboard').addEventListener('click', () => {
     chrome.runtime.openOptionsPage();
+  });
+
+  // Toggle GitHub sync
+  const toggleEl = document.getElementById('github-save-toggle');
+  if (toggleEl) {
+    toggleEl.addEventListener('change', async () => {
+      await saveSettings({ autoPush: toggleEl.checked });
+    });
+  }
+
+  // Toggle Zen Mode Options
+  const zenToggles = [
+    { id: 'hide-easy-toggle', key: 'hideEasy' },
+    { id: 'hide-medium-toggle', key: 'hideMedium' },
+    { id: 'hide-hard-toggle', key: 'hideHard' },
+    { id: 'hide-acceptance-toggle', key: 'hideAcceptance' }
+  ];
+
+  zenToggles.forEach(toggle => {
+    const el = document.getElementById(toggle.id);
+    if (el) {
+      el.addEventListener('change', async () => {
+        await saveSettings({ [toggle.key]: el.checked });
+      });
+    }
   });
 
   // Bulk sync uncommitted solutions
@@ -33,9 +58,44 @@ async function refreshUI() {
   const settings = await getSettings();
   const history = await getHistory();
 
+  // Initialize Zen Mode Checkboxes
+  const zenToggles = [
+    { id: 'hide-easy-toggle', key: 'hideEasy' },
+    { id: 'hide-medium-toggle', key: 'hideMedium' },
+    { id: 'hide-hard-toggle', key: 'hideHard' },
+    { id: 'hide-acceptance-toggle', key: 'hideAcceptance' }
+  ];
+
+  zenToggles.forEach(toggle => {
+    const el = document.getElementById(toggle.id);
+    if (el) {
+      el.checked = !!settings[toggle.key];
+    }
+  });
+
   // 1. Update GitHub Connection Status
   const githubStatus = document.getElementById('github-status');
-  if (settings.githubToken && settings.githubRepo) {
+  const toggleContainer = document.getElementById('github-save-container');
+  const toggleInput = document.getElementById('github-save-toggle');
+
+  const hasGitHub = !!(settings.githubToken && settings.githubRepo);
+
+  if (toggleInput) {
+    toggleInput.checked = settings.autoPush;
+    toggleInput.disabled = !hasGitHub;
+  }
+
+  if (toggleContainer) {
+    if (hasGitHub) {
+      toggleContainer.classList.remove('disabled');
+      toggleContainer.title = "";
+    } else {
+      toggleContainer.classList.add('disabled');
+      toggleContainer.title = "Connect GitHub in settings first";
+    }
+  }
+
+  if (hasGitHub) {
     githubStatus.className = 'status-container connected';
     githubStatus.innerHTML = `
       <div class="status-icon-wrapper">

@@ -13,7 +13,11 @@ const DEFAULT_SETTINGS = {
   theme: 'dark',
   commitMsgFormat: 'Solved {id} - {title}',
   languagePreference: 'Any',
-  folderNaming: 'Difficulty' // 'Difficulty' (Easy/Medium/Hard) or 'Flat'
+  folderNaming: 'Difficulty', // 'Difficulty' (Easy/Medium/Hard) or 'Flat'
+  hideEasy: false,
+  hideMedium: false,
+  hideHard: false,
+  hideAcceptance: false
 };
 
 /**

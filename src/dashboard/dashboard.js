@@ -93,7 +93,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     { id: 'settings-folder-structure', key: 'folderNaming' },
     { id: 'settings-commit-format', key: 'commitMsgFormat' },
     { id: 'settings-auto-sync', key: 'autoSync', isCheck: true },
-    { id: 'settings-auto-push', key: 'autoPush', isCheck: true }
+    { id: 'settings-auto-push', key: 'autoPush', isCheck: true },
+    { id: 'settings-hide-easy', key: 'hideEasy', isCheck: true },
+    { id: 'settings-hide-medium', key: 'hideMedium', isCheck: true },
+    { id: 'settings-hide-hard', key: 'hideHard', isCheck: true },
+    { id: 'settings-hide-acceptance', key: 'hideAcceptance', isCheck: true }
   ];
 
   prefInputs.forEach(input => {
@@ -147,6 +151,10 @@ async function initSettings() {
   document.getElementById('settings-commit-format').value = settings.commitMsgFormat;
   document.getElementById('settings-auto-sync').checked = settings.autoSync;
   document.getElementById('settings-auto-push').checked = settings.autoPush;
+  document.getElementById('settings-hide-easy').checked = !!settings.hideEasy;
+  document.getElementById('settings-hide-medium').checked = !!settings.hideMedium;
+  document.getElementById('settings-hide-hard').checked = !!settings.hideHard;
+  document.getElementById('settings-hide-acceptance').checked = !!settings.hideAcceptance;
 
   if (settings.githubToken) {
     document.getElementById('settings-token').value = settings.githubToken;
