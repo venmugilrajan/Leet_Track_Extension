@@ -366,6 +366,8 @@ function containsAccepted(mutation) {
 }
 
 // Observe the DOM to check for submission results
+let isCheckingSubmissions = false;
+
 function setupObserver() {
   console.log("[LeetTrack Pro] Injecting Mutation Observer...");
 
@@ -395,9 +397,12 @@ function setupObserver() {
 
       // Fast check for "Accepted" submission result without reading document.body.innerHTML
       if (containsAccepted(mutation)) {
+        if (isCheckingSubmissions) continue; // Skip if a check is already in progress
         const slug = getProblemSlug();
         if (slug) {
+          isCheckingSubmissions = true;
           fetchLatestSubmissions(slug).then(submissions => {
+            isCheckingSubmissions = false;
             const latest = submissions[0];
             if (latest && latest.statusDisplay === 'Accepted') {
               const ageSeconds = (Date.now() / 1000) - latest.timestamp;
@@ -406,6 +411,7 @@ function setupObserver() {
               }
             }
           }).catch(err => {
+            isCheckingSubmissions = false;
             console.error("[LeetTrack Pro] Submissions check failed:", err);
           });
         }
