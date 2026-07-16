@@ -241,84 +241,89 @@ function applyZenMode(settings) {
   }
   styleEl.textContent = css;
 
-  // 2. Perform DOM Walk to clean up any remaining text nodes
-  updateDOMTextVisibility(settings);
-}
-
-function updateDOMTextVisibility(settings) {
-  if (!settings.hideEasy && !settings.hideMedium && !settings.hideHard && !settings.hideAcceptance) {
+  const hasActiveZen = settings.hideEasy || settings.hideMedium || settings.hideHard || settings.hideAcceptance;
+  if (!hasActiveZen) {
+    // Restore all hidden elements if all settings are turned off
     document.querySelectorAll('[data-zen-hidden]').forEach(el => {
       el.style.opacity = '';
       el.style.pointerEvents = '';
       el.removeAttribute('data-zen-hidden');
     });
-    return;
+  } else {
+    // Perform initial walk on document.body
+    hideZenTextInSubtree(document.body, settings);
+  }
+}
+
+function hideZenTextNode(node, settings) {
+  const parent = node.parentElement;
+  if (!parent) return;
+
+  const tag = parent.tagName.toLowerCase();
+  if (tag === 'script' || tag === 'style' || tag === 'noscript') return;
+
+  const text = node.nodeValue.trim();
+  if (!text) return;
+
+  // Easy match
+  if (settings.hideEasy && text === 'Easy') {
+    parent.style.setProperty('opacity', '0', 'important');
+    parent.style.setProperty('pointer-events', 'none', 'important');
+    parent.setAttribute('data-zen-hidden', 'true');
   }
 
-  const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+  // Medium match
+  if (settings.hideMedium && (text === 'Medium' || text === 'Med.' || text === 'Med')) {
+    parent.style.setProperty('opacity', '0', 'important');
+    parent.style.setProperty('pointer-events', 'none', 'important');
+    parent.setAttribute('data-zen-hidden', 'true');
+  }
+
+  // Hard match
+  if (settings.hideHard && text === 'Hard') {
+    parent.style.setProperty('opacity', '0', 'important');
+    parent.style.setProperty('pointer-events', 'none', 'important');
+    parent.setAttribute('data-zen-hidden', 'true');
+  }
+
+  // Acceptance match
+  if (settings.hideAcceptance) {
+    // 1. Hide "Acceptance" header exactly
+    if (text === 'Acceptance') {
+      parent.style.setProperty('opacity', '0', 'important');
+      parent.style.setProperty('pointer-events', 'none', 'important');
+      parent.setAttribute('data-zen-hidden', 'true');
+    }
+    // 2. Hide acceptance stat block by checking if text matches Accepted/Acceptance Rate
+    if (text.includes('Accepted') || text.includes('Acceptance Rate')) {
+      let container = parent;
+      for (let i = 0; i < 5; i++) {
+        if (!container || !container.parentElement) break;
+        const parentText = container.parentElement.innerText || '';
+        if (parentText.includes('Accepted') && parentText.includes('Acceptance Rate')) {
+          container = container.parentElement;
+          break;
+        }
+        container = container.parentElement;
+      }
+      container.style.setProperty('opacity', '0', 'important');
+      container.style.setProperty('pointer-events', 'none', 'important');
+      container.setAttribute('data-zen-hidden', 'true');
+    }
+    // 3. Problem set list percentage match (e.g. "73.6%")
+    if (/^\d+(\.\d+)?%$/.test(text)) {
+      parent.style.setProperty('opacity', '0', 'important');
+      parent.style.setProperty('pointer-events', 'none', 'important');
+      parent.setAttribute('data-zen-hidden', 'true');
+    }
+  }
+}
+
+function hideZenTextInSubtree(element, settings) {
+  const walk = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
   let node;
   while (node = walk.nextNode()) {
-    const parent = node.parentElement;
-    if (!parent) continue;
-
-    const tag = parent.tagName.toLowerCase();
-    if (tag === 'script' || tag === 'style' || tag === 'noscript') continue;
-
-    const text = node.nodeValue.trim();
-    if (!text) continue;
-
-    // Easy match
-    if (settings.hideEasy && text === 'Easy') {
-      parent.style.setProperty('opacity', '0', 'important');
-      parent.style.setProperty('pointer-events', 'none', 'important');
-      parent.setAttribute('data-zen-hidden', 'true');
-    }
-
-    // Medium match
-    if (settings.hideMedium && (text === 'Medium' || text === 'Med.' || text === 'Med')) {
-      parent.style.setProperty('opacity', '0', 'important');
-      parent.style.setProperty('pointer-events', 'none', 'important');
-      parent.setAttribute('data-zen-hidden', 'true');
-    }
-
-    // Hard match
-    if (settings.hideHard && text === 'Hard') {
-      parent.style.setProperty('opacity', '0', 'important');
-      parent.style.setProperty('pointer-events', 'none', 'important');
-      parent.setAttribute('data-zen-hidden', 'true');
-    }
-
-    // Acceptance match
-    if (settings.hideAcceptance) {
-      // 1. Hide "Acceptance" header exactly
-      if (text === 'Acceptance') {
-        parent.style.setProperty('opacity', '0', 'important');
-        parent.style.setProperty('pointer-events', 'none', 'important');
-        parent.setAttribute('data-zen-hidden', 'true');
-      }
-      // 2. Hide acceptance stat block by checking if text matches Accepted/Acceptance Rate
-      if (text.includes('Accepted') || text.includes('Acceptance Rate')) {
-        let container = parent;
-        for (let i = 0; i < 5; i++) {
-          if (!container || !container.parentElement) break;
-          const parentText = container.parentElement.innerText || '';
-          if (parentText.includes('Accepted') && parentText.includes('Acceptance Rate')) {
-            container = container.parentElement;
-            break;
-          }
-          container = container.parentElement;
-        }
-        container.style.setProperty('opacity', '0', 'important');
-        container.style.setProperty('pointer-events', 'none', 'important');
-        container.setAttribute('data-zen-hidden', 'true');
-      }
-      // 3. Problem set list percentage match (e.g. "73.6%")
-      if (/^\d+(\.\d+)?%$/.test(text)) {
-        parent.style.setProperty('opacity', '0', 'important');
-        parent.style.setProperty('pointer-events', 'none', 'important');
-        parent.setAttribute('data-zen-hidden', 'true');
-      }
-    }
+    hideZenTextNode(node, settings);
   }
 }
 
@@ -338,12 +343,21 @@ function setupObserver() {
   });
   
   const observer = new MutationObserver((mutations) => {
-    if (currentZenSettings) {
-      updateDOMTextVisibility(currentZenSettings);
-    }
+    const hasActiveZen = currentZenSettings.hideEasy || currentZenSettings.hideMedium || currentZenSettings.hideHard || currentZenSettings.hideAcceptance;
 
     for (const mutation of mutations) {
-      if (mutation.type === 'childList' || mutation.type === 'characterData') {
+      if (mutation.type === 'childList') {
+        // Optimize: Only walk newly added subtrees to prevent performance lag
+        if (hasActiveZen) {
+          mutation.addedNodes.forEach(node => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              hideZenTextInSubtree(node, currentZenSettings);
+            } else if (node.nodeType === Node.TEXT_NODE) {
+              hideZenTextNode(node, currentZenSettings);
+            }
+          });
+        }
+
         const element = document.body;
         if (element.innerHTML.includes("Accepted")) {
           const slug = getProblemSlug();
@@ -361,13 +375,16 @@ function setupObserver() {
             });
           }
         }
+      } else if (mutation.type === 'characterData' && hasActiveZen) {
+        hideZenTextNode(mutation.target, currentZenSettings);
       }
     }
   });
 
   observer.observe(document.body, {
     childList: true,
-    subtree: true
+    subtree: true,
+    characterData: true
   });
 }
 
