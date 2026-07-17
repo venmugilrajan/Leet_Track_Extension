@@ -217,7 +217,7 @@ function applyZenMode(settings) {
   let css = '';
   if (settings.hideEasy) {
     css += `
-      .text-easy-s, [class*="text-green-s"], [class*="text-lc-green"], [class*="bg-lc-green"], [class*="text-emerald"], [class*="bg-emerald"] {
+      .text-easy-s, .text-difficulty-easy, .text-sd-easy, [class*="text-difficulty-easy"], [class*="text-sd-easy"] {
         opacity: 0 !important;
         pointer-events: none !important;
       }
@@ -225,7 +225,7 @@ function applyZenMode(settings) {
   }
   if (settings.hideMedium) {
     css += `
-      .text-medium-s, [class*="text-medium"], [class*="text-orange-s"], [class*="text-lc-orange"], [class*="bg-lc-orange"], [class*="text-yellow-s"], [class*="text-lc-yellow"], [class*="bg-lc-yellow"], [class*="text-amber"], [class*="bg-amber"] {
+      .text-medium-s, .text-difficulty-medium, .text-sd-medium, [class*="text-difficulty-medium"], [class*="text-sd-medium"] {
         opacity: 0 !important;
         pointer-events: none !important;
       }
@@ -233,7 +233,7 @@ function applyZenMode(settings) {
   }
   if (settings.hideHard) {
     css += `
-      .text-hard-s, [class*="text-red-s"], [class*="text-lc-red"], [class*="bg-lc-red"], [class*="text-pink"], [class*="bg-pink"] {
+      .text-hard-s, .text-difficulty-hard, .text-sd-hard, [class*="text-difficulty-hard"], [class*="text-sd-hard"] {
         opacity: 0 !important;
         pointer-events: none !important;
       }
@@ -297,18 +297,22 @@ function hideZenTextNode(node, settings) {
     // 2. Hide acceptance stat block by checking if text matches Accepted/Acceptance Rate
     if (text.includes('Accepted') || text.includes('Acceptance Rate')) {
       let container = parent;
+      let found = false;
       for (let i = 0; i < 5; i++) {
         if (!container || !container.parentElement) break;
         const parentText = container.parentElement.innerText || '';
         if (parentText.includes('Accepted') && parentText.includes('Acceptance Rate')) {
           container = container.parentElement;
+          found = true;
           break;
         }
         container = container.parentElement;
       }
-      container.style.setProperty('opacity', '0', 'important');
-      container.style.setProperty('pointer-events', 'none', 'important');
-      container.setAttribute('data-zen-hidden', 'true');
+      if (found) {
+        container.style.setProperty('opacity', '0', 'important');
+        container.style.setProperty('pointer-events', 'none', 'important');
+        container.setAttribute('data-zen-hidden', 'true');
+      }
     }
     // 3. Problem set list percentage match (e.g. "73.6%" or split structures containing "%")
     if (text.includes('%')) {
